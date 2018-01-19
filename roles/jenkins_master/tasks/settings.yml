@@ -1,0 +1,28 @@
+---
+# tasks file for jenkins_master
+
+- name: Setting Jenkins default port
+  lineinfile:
+    dest: "{{ jenkins_config_file }}"
+    regexp: "^HTTP_PORT="
+    line: "HTTP_PORT={{ jenkins_port }}"
+    state: present
+
+- name: Setting Jenkins not run setup wizard
+  lineinfile:
+    dest: "{{ jenkins_config_file }}"
+    regexp: "^JAVA_ARGS="
+    line: "JAVA_ARGS={{ jenkins_options }}"
+    state: present
+
+- name: Setting Jenkins default file owner and group
+  file:
+    path: "{{ jenkins_config_file }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Delete Jenkins security init scripts after first starting.
+  file:
+    path: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
+    state: absent

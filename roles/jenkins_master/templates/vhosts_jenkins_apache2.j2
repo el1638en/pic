@@ -1,0 +1,13 @@
+<VirtualHost *:{{ jenkins_reverse_proxy_http_default_port }}>
+	{% if jenkins_reverse_proxy_server_name != "" %}
+	ServerName {{ jenkins_reverse_proxy_server_name }}
+	{% endif %}
+	RewriteEngine On
+    LogLevel alert rewrite:trace2
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+    CustomLog "|/usr/bin/rotatelogs /var/log/apache2/rewrite_jenkins_%Y%m%d.log 86400" combined
+
+    RewriteRule ^/$ http://{{ jenkins_host }}:{{ jenkins_port }}/ [P]
+    RewriteRule ^/(.*)$ http://{{ jenkins_host }}:{{ jenkins_port }}/$1 [P]
+    ProxyPassReverse / http://{{ jenkins_host }}:{{ jenkins_port }}/
+</VirtualHost>

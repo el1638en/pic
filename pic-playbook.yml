@@ -1,0 +1,9 @@
+---
+
+
+# Deploiement du jenkins slave
+- include: "pic-slave.yml"
+
+# Deploiement du jenkins master
+- include: "pic-master.yml"
+

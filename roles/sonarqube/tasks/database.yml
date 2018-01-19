@@ -1,0 +1,37 @@
+---
+# tasks to create database for sonarqube
+
+- name: Installing python-psycopg2 package
+  apt:
+    pkg: python-psycopg2
+    state: present
+
+- name: Create sonar user, grant privilege to create databases
+  postgresql_user:
+    name: "{{ sonarqube_postgres_username }}"
+    password: "{{ sonarqube_postgres_password }}"
+    role_attr_flags: CREATEDB
+    state: present
+
+- name: Create a sonar database
+  postgresql_db:
+    name: "{{ sonarqube_postgres_database }}"
+    owner: "{{ sonarqube_postgres_username }}"
+    state: present
+
+- name : Create sonar.properties backup file
+  copy:
+    src: "{{ sonarqube_home }}/conf/sonar.properties"
+    dest: "{{ sonarqube_home }}/conf/sonar.properties.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+
+- name: Change the config of sonar to apply postgres datas
+  lineinfile:
+    path: "{{ sonarqube_home }}/conf/sonar.properties"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.value }}"
+    state: present
+  with_items: "{{ sonarqube_postgres_config }}"

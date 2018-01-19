@@ -1,0 +1,61 @@
+---
+
+- name : Check issue backup file exists
+  stat:
+    path: "/etc/issue.backup"
+  register: issue_backup_file
+
+- name : Create issue backup file
+  copy:
+    src: "/etc/issue"
+    dest: "/etc/issue.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not issue_backup_file.stat.exists
+
+- name : Check issue.net backup file exists
+  stat:
+    path: "/etc/issue.net.backup"
+  register: issue_net_backup_file
+
+- name : Create issue.net backup file
+  copy:
+    src: "/etc/issue.net"
+    dest: "/etc/issue.net.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not issue_backup_file.stat.exists
+
+- name : Check profile backup file exists
+  stat:
+    path: "{{ ssh_profile_file }}.backup"
+  register: profile_backup_file
+
+- name : Create profile backup file
+  copy:
+    src: "{{ ssh_profile_file }}"
+    dest: "{{ ssh_profile_file }}.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not profile_backup_file.stat.exists
+
+- name : Check motd backup file exists
+  stat:
+    path: "{{ ssh_motd_file }}.backup"
+  register: motd_backup_file
+
+- name : Create profile backup file
+  copy:
+    src: "{{ ssh_motd_file }}"
+    dest: "{{ ssh_motd_file }}.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not motd_backup_file.stat.exists

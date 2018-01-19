@@ -1,0 +1,30 @@
+---
+# tasks file for to install jenkins
+
+- name: Install required librairies
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "curl"
+    - "apt-transport-https"
+
+- name: Add Jenkins repository key.
+  apt_key:
+    url: "{{ jenkins_repository_key }}"
+    state: present
+
+- name: Add Jenkins repository.
+  apt_repository:
+    repo: "{{ jenkins_repository_list }}"
+    state: present
+    update_cache: yes
+
+- name: Run the equivalent of "apt-get update"
+  apt:
+    update_cache: yes
+
+- name: install Jenkins.
+  apt:
+    name: jenkins
+    state: present

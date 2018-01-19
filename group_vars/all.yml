@@ -1,0 +1,5 @@
+---
+
+jenkins_user_name: "jenkins"
+jenkins_user_password: ""
+jenkins_user_comment: "Technical user to make ssh connexion between jenkins master and slaves"
