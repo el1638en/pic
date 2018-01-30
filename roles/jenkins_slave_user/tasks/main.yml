@@ -1,0 +1,61 @@
+---
+
+- name: Create slave user {{ jenkins_slave_user_name }} on the slave machine
+  user:
+    name: "{{ jenkins_slave_user_name }}"
+    comment: "{{ jenkins_slave_user_comment }}"
+    shell: /bin/bash
+    password: "{{ jenkins_slave_user_comment }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_type: rsa
+
+- name: Copy public key into the authorized_keys file {{ jenkins_slave_user_name }}
+  copy:
+    src: "/home/{{ jenkins_slave_user_name }}/.ssh/id_rsa.pub"
+    dest: "/home/{{ jenkins_slave_user_name }}/.ssh/authorized_keys"
+    mode: 0600
+    owner: "{{ jenkins_slave_user_name }}"
+    group: "{{ jenkins_slave_user_name }}"
+    remote_src: yes
+
+- name: Fetch jenkins slave user private key into the ansible main machine
+  fetch:
+    src: "/home/{{ jenkins_slave_user_name }}/.ssh/id_rsa"
+    dest: "{{ jenkins_slave_user_privateKeyfile }}"
+    flat: yes
+
+- name: Generate list of ip address
+  template:
+    src: "hosts_ip_address.j2"
+    dest: "/home/{{ jenkins_slave_user_name }}/hosts_ip_address"
+    owner: "{{ jenkins_slave_user_name }}"
+    group: "{{ jenkins_slave_user_name }}"
+
+- name: get the file contents
+  command: "cat /home/{{ jenkins_slave_user_name }}/hosts_ip_address"
+  register: ips_address
+
+- name: For each host, scan for its ssh public key
+  shell: "ssh-keyscan -H {{ item }}"
+  with_items: "{{ ips_address.stdout_lines }}"
+  register: ssh_known_hosts_results
+
+- name: Add/update the public key in the known_hosts of slave user
+  known_hosts:
+    name: "{{ item.item }}"
+    key: "{{ item.stdout }}"
+    state: present
+    path: "/home/{{ jenkins_slave_user_name }}/.ssh/known_hosts"
+  with_items: "{{ ssh_known_hosts_results.results }}"
+
+- name: set known_hosts file owner and group
+  file:
+    path: "/home/{{ jenkins_slave_user_name }}/.ssh/known_hosts"
+    owner: "{{ jenkins_slave_user_name }}"
+    group: "{{ jenkins_slave_user_name }}"
+
+- name: Remove ip address file
+  file:
+    path: "/home/{{ jenkins_slave_user_name }}/hosts_ip_address"
+    state: absent

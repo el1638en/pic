@@ -1,4 +1,5 @@
 ---
+# defaults file for jenkins_slave_user
 
 jenkins_slave_user_name: "jenkins_slave"
 jenkins_slave_user_password: ""

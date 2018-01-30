@@ -1,0 +1,15 @@
+---
+
+###################
+# Playbook to install jenkins slave
+###################
+
+- hosts: jenkins_slave
+  become: yes
+  roles:
+    - { role: jenkins_slave_user }
+    - { role: ssh, ssh_delete_obsolete_packages: True }
+    - { role: git }
+    - { role: openjdk8 }
+    - { role: maven }
+    - { role: gradle }

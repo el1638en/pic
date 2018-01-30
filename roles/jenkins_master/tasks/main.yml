@@ -7,6 +7,12 @@
 
 - include: plugins.yml
 
+- include: ssh_config.yml
+
+- include: config.yml
+
+- include: credentials.yml
+
 - include: iptables.yml
   when: jenkins_iptables_enabled
 

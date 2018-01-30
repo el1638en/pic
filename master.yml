@@ -3,7 +3,7 @@
 ###################
 # Playbook to install jenkins master
 ###################
-- hosts: jenkins_slave
+- hosts: jenkins_master
   become: yes
   roles:
     - { role: ssh, ssh_delete_obsolete_packages: True }

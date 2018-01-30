@@ -1,9 +1,44 @@
 ---
 
+###################
+# Installation du slave jenkins
+###################
+# Installation du slave
+- hosts: jenkins_slave
+  become: yes
+  roles:
+    - { role: jenkins_slave_user }
+    - { role: ssh, ssh_delete_obsolete_packages: True }
+    - { role: git }
+    - { role: openjdk8 }
+    - { role: maven }
+    - { role: gradle }
 
-# Deploiement du jenkins slave
-- include: "pic-slave.yml"
+###################
+# Gestion de la clé privé du user du slave jenkins
+###################
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: Retrieve jenkins slave user private key
+    local_action: shell cat {{ jenkins_slave_user_privateKeyfile }} 
+    register: user_private_key
 
-# Deploiement du jenkins master
-- include: "pic-master.yml"
+  - name: set jenkins_slave_user_privateKeySource
+    set_fact:
+      jenkins_slave_user_privateKeySource: '{{ user_private_key.stdout }}'
+
+  - name: Delete jenkins slave user private key
+    local_action: rm -f {{ jenkins_slave_user_privateKeyfile }}
+
+###################
+# Installation du jenkins master
+###################
+- hosts: jenkins_master
+  become: yes
+  roles:
+    - { role: ssh, ssh_delete_obsolete_packages: True }
+    - { role: git }
+    - { role: jenkins_master, jenkins_slave_user_privateKeySource: "{{ hostvars['localhost']['jenkins_slave_user_privateKeySource'] }}", jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True }
+
 

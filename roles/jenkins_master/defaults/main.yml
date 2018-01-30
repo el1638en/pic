@@ -9,7 +9,12 @@ jenkins_host: 192.168.1.21
 jenkins_port: 8081
 jenkins_network_interface: "eth0"
 jenkins_iptables_enabled: False
-jenkins_options: "-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
+jenkins_options: "-Djava.awt.headless=true"
+# -Djenkins.install.runSetupWizard=false
+jenkins_user_name: "jenkins"
+jenkins_slave_user_name: "jenkins_slave"
+jenkins_slave_user_privateKeySource: ""
+jenkins_slave_user_comment: "Technical user for ssh connexion between jenkins master and slaves"
 # http://updates.jenkins.io/download/plugins/ : Get liste of Jenkins plugins
 jenkins_plugins:
     - { name: ace-editor, version: '1.1' }
@@ -143,6 +148,11 @@ jenkins_plugins:
     - { name: ws-cleanup, version: '0.34' }
     - { name: xunit, version: '1.102' }
 
+jenkins_ssh_users:
+    - { id: "{{ jenkins_slave_user_name }}", user: "{{ jenkins_slave_user_name }}", description: "{{ jenkins_slave_user_comment }}", username: "{{ jenkins_slave_user_name }}", passphrase: "", privateKeySource: "{{ jenkins_slave_user_privateKeySource }}" }
+
+# jenkins_local_users:
+#     - { id: "{{ jenkins_slave_user_name }}", user: "{{ jenkins_slave_user_name }}", description: "{{ jenkins_slave_user_comment }}", username: "{{ jenkins_slave_user_name }}", password: "{{ jenkins_slave_user_password }}" }
 jenkins_reverse_proxy_enabled: False
 jenkins_reverse_proxy_http_default_port: 80
 jenkins_reverse_proxy_server_name:

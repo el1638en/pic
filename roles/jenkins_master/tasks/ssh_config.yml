@@ -1,0 +1,53 @@
+---
+
+# Taches de configuration du compte ssh de l'utilisateur jenkins
+
+- name: Create .ssh directory for user jenkins
+  file:
+    path: "{{ jenkins_home }}/.ssh"
+    state: directory
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+
+- name: Create .ssh/known_hosts file for user jenkins
+  file:
+    path: "{{ jenkins_home }}/.ssh/known_hosts"
+    state: touch
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0644
+
+- name: Generate list of ip address
+  template:
+    src: "hosts_ip_address.j2"
+    dest: "{{ jenkins_home }}/hosts_ip_address"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+
+- name: get the file contents
+  command: "cat {{ jenkins_home }}/hosts_ip_address"
+  register: ips_address
+
+- name: For each host, scan for its ssh public key
+  shell: "ssh-keyscan -H {{ item }}"
+  with_items: "{{ ips_address.stdout_lines }}"
+  register: ssh_known_hosts_results
+
+- name: Add/update the public key in the known_hosts of slave user
+  known_hosts:
+    name: "{{ item.item }}"
+    key: "{{ item.stdout }}"
+    state: "present"
+    path: "{{ jenkins_home }}/.ssh/known_hosts"
+  with_items: "{{ ssh_known_hosts_results.results }}"
+
+- name: set known_hosts file owner and group
+  file:
+    path: "{{ jenkins_home }}/.ssh/known_hosts"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+
+- name: Remove ip address file
+  file:
+    path: "{{ jenkins_home }}/hosts_ip_address"
+    state: absent

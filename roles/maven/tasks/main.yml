@@ -1,49 +1,10 @@
 ---
 # tasks file for maven
 
-- name: Install archive tools
-  apt:
-    name: "{{item}}"
-    state: latest
-  with_items:
-    - "tar"
-    - "unzip"
+- name: Get Maven version installed on the machin
+  shell: "{{ maven_home }}/bin/mvn --version 2>&1"
+  register: maven_version_result
+  ignore_errors: True
 
-- name: Create maven directory
-  file:
-    path: "{{ maven_install_directory }}"
-    state: directory
-    owner: root
-    group: root
-    recurse: yes
-
-- name: Download, decompress and delete maven archive
-  unarchive:
-    src: "{{ maven_download_archive_url }}"
-    dest: "{{ maven_install_directory }}/"
-    remote_src: True
-
-- name: Update maven directory
-  file:
-    path: "{{ maven_install_directory }}"
-    state: directory
-    owner: root
-    group: root
-    recurse: yes
-
-- name: Add/Update environments variables
-  blockinfile:
-    dest: "/etc/profile"
-    insertafter: EOF
-    block: |
-      # Maven Home
-      M2_HOME="{{ maven_home }}"
-      export M2_HOME
-      # Update PATH
-      PATH=$PATH:"$M2_HOME/bin"
-      export PATH
-    state: present
-
-- name: Relaod environments variables
-  shell: . /etc/profile
-
+- include: install.yml
+  when: (maven_version_result|failed) or (maven_version not in maven_version_result.stdout)
