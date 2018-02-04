@@ -1,2 +1,19 @@
 ---
 
+- name: Generate groovy script to create/update nodes
+  template:
+    src: "add-nodes.groovy.j2"
+    dest: "/tmp/add-nodes.groovy"
+    owner:  "{{ jenkins_user_name }}"
+    group:  "{{ jenkins_user_name }}"
+
+- name: Execute the script /tmp/add-nodes.groovy
+  shell: >
+    java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar \
+    -s http://localhost:{{ jenkins_port }}/ \
+    -remoting groovy /tmp/add-nodes.groovy
+
+- name: Delete groovy file
+  file:
+    path: /tmp/add-nodes.groovy
+    state: absent

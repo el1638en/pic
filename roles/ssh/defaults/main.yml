@@ -21,7 +21,7 @@ ssh_config :
     - { regexp: "^Protocol", value: "Protocol 2" }
     - { regexp: "^PermitRootLogin", value: "PermitRootLogin no" }
     - { regexp: "^PasswordAuthentication", value: "PasswordAuthentication no" }
-    - { regexp: "^#StrictModes", value: "StrictModes yes" }
+    - { regexp: "^StrictModes", value: "StrictModes yes" }
     - { regexp: "^PermitUserEnvironment", value: "PermitUserEnvironment no" }
     - { regexp: "^AllowTcpForwarding", value: "AllowTcpForwarding no" }
     - { regexp: "^X11Forwarding", value: "X11Forwarding no" }

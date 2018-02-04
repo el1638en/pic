@@ -1,35 +1,6 @@
 ---
 
-###################
-# Installation du slave jenkins
-###################
-# Installation du slave
-- hosts: jenkins_slave
-  become: yes
-  roles:
-    - { role: jenkins_slave_user }
-    - { role: ssh, ssh_delete_obsolete_packages: True }
-    - { role: git }
-    - { role: openjdk8 }
-    - { role: maven }
-    - { role: gradle }
-
-###################
-# Gestion de la clé privé du user du slave jenkins
-###################
-- hosts: localhost
-  become: yes
-  tasks:
-  - name: Retrieve jenkins slave user private key
-    local_action: shell cat {{ jenkins_slave_user_privateKeyfile }} 
-    register: user_private_key
-
-  - name: set jenkins_slave_user_privateKeySource
-    set_fact:
-      jenkins_slave_user_privateKeySource: '{{ user_private_key.stdout }}'
-
-  - name: Delete jenkins slave user private key
-    local_action: rm -f {{ jenkins_slave_user_privateKeyfile }}
+# Playbook d'installation d'une plateforme d'integration continue (pic).
 
 ###################
 # Installation du jenkins master
@@ -39,6 +10,54 @@
   roles:
     - { role: ssh, ssh_delete_obsolete_packages: True }
     - { role: git }
-    - { role: jenkins_master, jenkins_slave_user_privateKeySource: "{{ hostvars['localhost']['jenkins_slave_user_privateKeySource'] }}", jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True }
+    - { role: jenkins_master, jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True }
 
+##################
+# Gestion de la clé publique de l'utilisateur jenkins
+##################
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: Retrieve jenkins user public key
+    local_action: shell cat {{ jenkins_public_key_dir }}/id_rsa.pub
+    register: public_key
+
+  - name: set jenkins_public_key
+    set_fact:
+      jenkins_public_key: '{{ public_key.stdout }}'
+
+  - name: Delete jenkins slave user private key
+    local_action: shell file path="{{ jenkins_public_key_dir }}/id_rsa.pub" state=absent
+
+##################
+# Installation du slave jenkins
+##################
+- hosts: jenkins_slave
+  become: yes
+  roles:
+    - { role: jenkins_slave_user, jenkins_public_key: "{{ hostvars['localhost']['jenkins_public_key'] }}" }
+    - { role: ssh, ssh_delete_obsolete_packages: True }
+    - { role: git }
+    - { role: openjdk8 }
+    - { role: maven }
+    - { role: gradle }
+
+
+
+##################
+# Installation nexus - TODO
+##################
+
+
+
+##################
+# Installation sonarqube - TODO
+##################
+
+
+##################
+# Android - TODO
+##################
+# https://pamartinezandres.com/how-to-set-up-a-continuous-integration-server-for-android-development-ubuntu-jenkins-sonarqube-43c1ed6b08d3?gi=6503321539ae
+# https://pamartinezandres.com/running-android-tests-on-cloud-devices-using-a-jenkins-ci-server-firebase-test-lab-amazon-device-b67cb4b16c40
 

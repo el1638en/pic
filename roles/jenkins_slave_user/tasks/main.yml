@@ -1,6 +1,6 @@
 ---
 
-- name: Create slave user {{ jenkins_slave_user_name }} on the slave machine
+- name: Create slave user on the slave machine
   user:
     name: "{{ jenkins_slave_user_name }}"
     comment: "{{ jenkins_slave_user_comment }}"
@@ -10,7 +10,7 @@
     ssh_key_bits: 2048
     ssh_key_type: rsa
 
-- name: Copy public key into the authorized_keys file {{ jenkins_slave_user_name }}
+- name: Copy public key into the authorized_keys file
   copy:
     src: "/home/{{ jenkins_slave_user_name }}/.ssh/id_rsa.pub"
     dest: "/home/{{ jenkins_slave_user_name }}/.ssh/authorized_keys"
@@ -19,11 +19,14 @@
     group: "{{ jenkins_slave_user_name }}"
     remote_src: yes
 
-- name: Fetch jenkins slave user private key into the ansible main machine
-  fetch:
-    src: "/home/{{ jenkins_slave_user_name }}/.ssh/id_rsa"
-    dest: "{{ jenkins_slave_user_privateKeyfile }}"
-    flat: yes
+- name: Add jenkins server user public key into the authorized_keys file
+  lineinfile:
+    dest: "/home/{{ jenkins_slave_user_name }}/.ssh/authorized_keys"
+    line: '{{ jenkins_public_key }}'
+    mode: 0600
+    owner: "{{ jenkins_slave_user_name }}"
+    group: "{{ jenkins_slave_user_name }}"
+    state: present
 
 - name: Generate list of ip address
   template:
@@ -41,6 +44,14 @@
   with_items: "{{ ips_address.stdout_lines }}"
   register: ssh_known_hosts_results
 
+- name: Init known_hosts file for user jenkins
+  file:
+    path: "/home/{{ jenkins_slave_user_name }}/.ssh/known_hosts"
+    state: touch
+    owner: "{{ jenkins_slave_user_name }}"
+    group: "{{ jenkins_slave_user_name }}"
+    mode: 0644
+
 - name: Add/update the public key in the known_hosts of slave user
   known_hosts:
     name: "{{ item.item }}"
@@ -54,8 +65,11 @@
     path: "/home/{{ jenkins_slave_user_name }}/.ssh/known_hosts"
     owner: "{{ jenkins_slave_user_name }}"
     group: "{{ jenkins_slave_user_name }}"
+    mode: 0644
 
 - name: Remove ip address file
   file:
     path: "/home/{{ jenkins_slave_user_name }}/hosts_ip_address"
     state: absent
+
+- include: ansible.yml

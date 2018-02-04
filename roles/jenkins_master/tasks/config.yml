@@ -1,10 +1,28 @@
 ---
 # Taches de configuration du serveur Jenkins
 
-- name: Copie des configs Maven
+# - name: Copie des configs Maven
+#   template:
+#     src: hudson.tasks.Maven.xml.j2
+#     dest: "{{ jenkins_home }}/hudson.tasks.Maven.xml"
+#     owner: "{{ jenkins_user_name }}"
+#     group: "{{ jenkins_user_name }}"
+#     mode: 0640
+
+- name: Generate groovy script for Maven
   template:
-    src: hudson.tasks.Maven.xml.j2
-    dest: "{{ jenkins_home }}/hudson.tasks.Maven.xml"
-    owner: "{{ jenkins_user_name }}"
-    group: "{{ jenkins_user_name }}"
-    mode: 0640
+    src: "Maven.groovy.j2"
+    dest: "/tmp/Maven.groovy"
+    owner:  "{{ jenkins_user_name }}"
+    group:  "{{ jenkins_user_name }}"
+
+- name: Execute the script /tmp/Maven.groovy
+  shell: >
+    java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar \
+    -s http://localhost:{{ jenkins_port }}/ \
+    -remoting groovy /tmp/Maven.groovy
+
+- name: Delete groovy file
+  file:
+    path: "/tmp/Maven.groovy"
+    state: absent

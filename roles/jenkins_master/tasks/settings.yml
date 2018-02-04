@@ -8,7 +8,7 @@
     line: "HTTP_PORT={{ jenkins_port }}"
     state: present
 
-- name: Setting Jenkins not run setup wizard
+- name: Setting Jenkins options
   lineinfile:
     dest: "{{ jenkins_config_file }}"
     regexp: "^JAVA_ARGS="
@@ -27,7 +27,81 @@
     path: "{{ jenkins_home }}/init.groovy.d/basic-security.groovy"
     state: absent
 
+- name : Check original config file backup file exists
+  stat:
+    path: "{{ jenkins_home }}/config.xml.backup"
+  register: config_backup_file
+
+- name: Copy original config file into backup
+  copy:
+    src: "{{ jenkins_home }}/config.xml"
+    dest: "{{ jenkins_home }}/config.xml.backup"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0644
+    remote_src: yes
+  when: not config_backup_file.stat.exists
+
+- name: Disable security - copy script to remote host
+  template:
+    src: "disable-security.python.j2"
+    dest: "/tmp/disable-security.python"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0755
+
+- name: Execute script to disable security
+  shell: "python /tmp/disable-security.python"
+
+- name: Set the TCP port for JNLP agents
+  lineinfile:
+    dest: "{{ jenkins_home }}/config.xml"
+    regexp: "^(\\s*)<slaveAgentPort>"
+    line: "\\1<slaveAgentPort>0</slaveAgentPort>"
+    backrefs: yes
+
+- name: Update file owner/group and rights
+  file:
+    path: "{{ jenkins_home }}/config.xml"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0644
+
+- name: Delete groovy file
+  file:
+    path: "/tmp/disable-security.python"
+    state: absent
+
+- name : Check original config CLI file backup file exists
+  stat:
+    path: "{{ jenkins_cli_file }}.backup"
+  register: config_cli_backup_file
+
+- name: Copy original config file into backup
+  copy:
+    src: "{{ jenkins_cli_file }}"
+    dest: "{{ jenkins_cli_file }}.backup"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0644
+    remote_src: yes
+  when: not config_cli_backup_file.stat.exists
+
+- name: Setting Jenkins CLI enabled
+  copy:
+    src: "jenkins.CLI.xml"
+    dest: "{{ jenkins_cli_file }}"
+    owner: "{{ jenkins_user_name }}"
+    group: "{{ jenkins_user_name }}"
+    mode: 0644
+
 - name: Restart Jenkins
   command: echo "Restart Jenkins"
   notify:
     - Restart Jenkins
+
+- meta: flush_handlers
+
+- name: Wait 200 seconds for restart jenkins.
+  wait_for:
+    timeout: 200

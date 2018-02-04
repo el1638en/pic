@@ -1,7 +1,3 @@
 ---
 
-jenkins_slave_user_name: "jenkins_slave"
-jenkins_slave_user_password: ""
-jenkins_slave_user_comment: "Technical user for ssh connexion between jenkins master and slaves."
-jenkins_slave_user_privateKeyfile: "/tmp/jenkins_slave_id_rsa"
-jenkins_slave_user_privateKeySource: ""
+jenkins_public_key_dir: "/tmp/jenkins"

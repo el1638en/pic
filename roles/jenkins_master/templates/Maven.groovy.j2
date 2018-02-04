@@ -1,0 +1,15 @@
+
+import jenkins.model.*
+
+def instance = Jenkins.getInstance()
+
+// Tell jenkins where maven is
+def mavenTask = Jenkins.instance.getExtensionList(
+  hudson.tasks.Maven.DescriptorImpl.class
+)[0]
+mavenTask.setInstallations(
+  new hudson.tasks.Maven.MavenInstallation(
+    "Maven 3.5.2", "/opt/maven/apache-maven-3.5.2", []
+  )
+)
+mavenTask.save()

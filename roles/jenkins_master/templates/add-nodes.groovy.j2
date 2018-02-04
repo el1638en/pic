@@ -4,44 +4,37 @@ import hudson.slaves.*
 import hudson.plugins.sshslaves.*
 import java.util.ArrayList;
 
-def newNodes = [];
-//def need_update=0
+Jenkins jenkins = Jenkins.instance;
+String credentialID = "jenkins";
 
-Jenkins jenkins = Jenkins.instance
+{% for node in groups['jenkins_slave'] %}
 
-{% for new_node in cj_nodes %}
-
-{{ new_node.name }}: {
-    def need_update=0
-    for (Node node in jenkins.nodes) {
-      if ("$node.nodeName" == "{{ new_node.name }}") {
-         need_update=1
+{{node}}: {
+    def need_update=0;
+    for (Node existNode in jenkins.nodes) {
+      if ("$existNode.nodeName" == "{{node}}") {
+         need_update=1;
          continue;
       }
     }
-    {% if new_node.launcher_type == 'ssh' %}
-    ComputerLauncher launcher = new SSHLauncher("{{ new_node.host }}", {{ new_node.ssh_port }} , "{{ new_node.credential_id }}", "","","","",  0,0,0)
-    {% else %}
-    ComputerLauncher launcher = new JNLPLauncher()
-    {% endif %}
+    ComputerLauncher launcher = new SSHLauncher("{{hostvars[node]['ansible_host']}}", 22 , credentialID, "","","","",0,0,0);
+
     Slave slave = new DumbSlave(
-                    "{{ new_node.name }}",
-                    "{{ new_node.description }}",
-                    "{{ new_node.home }}",
-                    "{{ new_node.executors }}",
+                    "{{ node }}",
+                    "Jenkins node {{ node }}",
+                    "/home/jenkins",
+                    "2",
                     Node.Mode.NORMAL,
-                    "{{ new_node.labels }}",
+                    "Jenkins slave",
                     launcher,
-                    //new SSHLauncher("{{ new_node.host }}", {{ new_node.ssh_port }} , "{{ new_node.credential_id }}", "","","","",  0,0,0),
-                    //new JNLPLauncher(),
                     new RetentionStrategy.Always(),
-                    new LinkedList())
+                    new LinkedList());
     if (need_update==1) {
-      jenkins.updateNode(slave)
+      jenkins.updateNode(slave);
     } else {
-      jenkins.addNode(slave)
+      jenkins.addNode(slave);
     }
 }
 {% endfor %}
 
-jenkins.save()
+jenkins.save();
