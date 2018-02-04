@@ -1,19 +1,19 @@
 ---
 # tasks file for jenkins_master
 
-# - include: install.yml
+- include: install.yml
 
-# - include: settings.yml
+- include: settings.yml
 
-# - include: plugins.yml
+- include: plugins.yml
 
-# - include: ssh_config.yml
+- include: ssh_config.yml
 
-# - include: config.yml
+- include: config.yml
 
-# - include: credentials.yml
+- include: credentials.yml
 
-# - include: nodes.yml
+- include: nodes.yml
 
 - include: ansible.yml
 
