@@ -1,2 +1,5 @@
 ---
 # handlers file for gradle
+
+- name: Reload profile variable
+  shell: . /etc/profile

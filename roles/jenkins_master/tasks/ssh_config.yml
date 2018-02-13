@@ -27,7 +27,7 @@
 
 - name: Generate list of ip address
   template:
-    src: "hosts_ip_address.j2"
+    src: hosts_ip_address.j2
     dest: "{{ jenkins_home }}/hosts_ip_address"
     owner: "{{ jenkins_user_name }}"
     group: "{{ jenkins_user_name }}"
@@ -37,7 +37,7 @@
   register: list_ip_address
 
 - name: For each host, scan for its ssh public key
-  shell: "ssh-keyscan -H {{ item }}"
+  command: "ssh-keyscan -H {{ item }}"
   with_items: "{{ list_ip_address.stdout_lines }}"
   register: ssh_known_hosts_results
 

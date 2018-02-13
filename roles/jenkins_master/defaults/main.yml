@@ -1,6 +1,6 @@
 ---
 # defaults file for jenkins_master
-nodes: ""
+
 jenkins_repository_key: "https://pkg.jenkins.io/debian-stable/jenkins.io.key"
 jenkins_repository_list: "deb https://pkg.jenkins.io/debian-stable binary/"
 jenkins_config_file: "/etc/default/jenkins"
@@ -11,8 +11,8 @@ jenkins_host: 192.168.1.21
 jenkins_port: 8081
 jenkins_network_interface: "eth0"
 jenkins_iptables_enabled: False
-jenkins_options: "-Djava.awt.headless=true"
-# -Djenkins.install.runSetupWizard=false
+jenkins_options: "-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"
+# 
 jenkins_reverse_proxy_enabled: False
 jenkins_reverse_proxy_http_default_port: 80
 jenkins_reverse_proxy_server_name:

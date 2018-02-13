@@ -9,7 +9,7 @@
 
 - include: ssh_config.yml
 
-- include: config.yml
+- include: maven_config.yml
 
 - include: credentials.yml
 
@@ -17,20 +17,16 @@
 
 - include: ansible.yml
 
-- include: iptables.yml
-  when: jenkins_iptables_enabled
-
 - name: Restart Jenkins
   command: echo "Restart Jenkins"
   notify:
     - Restart Jenkins
 
+- include: iptables.yml
+  when: jenkins_iptables_enabled
+
 - name: Add reverse proxy configuration
   include: reverse_proxy.yml
-  when: jenkins_reverse_proxy_enabled
-
-- name: Restart apache2
-  command: echo "Restart apache2"
   notify:
     - Restart apache2
   when: jenkins_reverse_proxy_enabled

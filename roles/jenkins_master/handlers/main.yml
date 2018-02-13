@@ -2,7 +2,7 @@
 # handlers file for jenkins_master
 
 - name: Restart Jenkins
-  service:
+  systemd:
     name: jenkins
     state: restarted
 

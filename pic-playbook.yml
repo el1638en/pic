@@ -2,15 +2,23 @@
 
 # Playbook d'installation d'une plateforme d'integration continue (pic).
 
+##################
+# Installation des outils communs
+##################
+- hosts: all
+  become: yes
+  roles:
+    - { role: ssh, ssh_delete_obsolete_packages: True }
+    - { role: git }
+
+
 ###################
 # Installation du jenkins master
 ###################
 - hosts: jenkins_master
   become: yes
   roles:
-    - { role: ssh, ssh_delete_obsolete_packages: True }
-    - { role: git }
-    - { role: jenkins_master, jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True }
+    - { role: jenkins_master, jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True, tags: ['jenkins_master'] }
 
 ##################
 # Gestion de la clé publique de l'utilisateur jenkins
@@ -27,7 +35,7 @@
       jenkins_public_key: '{{ public_key.stdout }}'
 
   - name: Delete jenkins slave user private key
-    local_action: shell file path="{{ jenkins_public_key_dir }}/id_rsa.pub" state=absent
+    local_action: file path="{{ jenkins_public_key_dir }}/id_rsa.pub" state=absent
 
 ##################
 # Installation du slave jenkins
@@ -35,9 +43,7 @@
 - hosts: jenkins_slave
   become: yes
   roles:
-    - { role: jenkins_slave_user, jenkins_public_key: "{{ hostvars['localhost']['jenkins_public_key'] }}" }
-    - { role: ssh, ssh_delete_obsolete_packages: True }
-    - { role: git }
+    - { role: jenkins_slave_user, jenkins_public_key: "{{ hostvars['localhost']['jenkins_public_key'] }}", tags: ['jenkins_slave_user'] }
     - { role: openjdk8 }
     - { role: maven }
     - { role: gradle }
@@ -45,14 +51,32 @@
 
 
 ##################
-# Installation nexus - TODO
+# Installation nexus
 ##################
+- hosts: nexus_server:sonarqube_server
+  become: yes
+  roles:
+    - role: postgres
+      tags: ['nexus','sonarqube']
+
+- hosts: nexus_server
+  become: yes
+  roles:
+    - role: nexus
+      nexus_network_interface: "enp0s8"
+      nexus_iptables_enabled: True
+      tags: ['nexus']
 
 
-
-##################
-# Installation sonarqube - TODO
-##################
+# ##################
+# # Installation sonarqube
+# ##################
+- hosts: sonarqube_server
+  become: yes
+  roles:
+    - role: sonarqube
+      sonarqube_postgres_database_enabled: True
+      tags: ['sonarqube']
 
 
 ##################

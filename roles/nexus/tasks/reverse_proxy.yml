@@ -16,8 +16,5 @@
     owner: root
     group: root
     mode: 0777
-
-- name: Restart apache2
-  command: echo "Restart apache2"
   notify:
-    - Restart apache2
+  - Restart apache2

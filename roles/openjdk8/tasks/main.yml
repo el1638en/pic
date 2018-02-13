@@ -12,6 +12,8 @@
     line: 'JAVA_HOME="/usr/lib/jvm/java-8-openjdk-i386"'
     owner: root
     group: root
+  notify:
+    - Relaod environments variables
   when: "ansible_userspace_bits == '32'"
 
 - name: Define JAVA_HOME variable for 64 bits machine
@@ -20,7 +22,9 @@
     line: 'JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"'
     owner: root
     group: root
+  notify:
+    - Relaod environments variables
   when: "ansible_userspace_bits == '64'"
 
-- name: Relaod environments variables
-  shell: . /etc/environment
+# - name: Relaod environments variables
+#   shell: . /etc/environment

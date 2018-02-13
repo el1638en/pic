@@ -2,7 +2,7 @@
 
 - name: Install archive tools
   apt:
-    name: "{{ item }}"
+    name: "{{item}}"
     state: present
   with_items:
     - "tar"
@@ -34,6 +34,5 @@
       PATH=$PATH:"$GRADLE_HOME/bin"
       export PATH
     state: present
-
-- name: Relaod environments variables
-  shell: . /etc/profile
+  notify:
+    - Reload profile variable

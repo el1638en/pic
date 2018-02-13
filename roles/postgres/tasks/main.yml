@@ -1,0 +1,37 @@
+---
+# tasks file for postgres
+
+
+- name: Installing PostgreSQL Server packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ postgres_server_pkg }}"
+    - "{{ postgres_client_pkg }}"
+
+- name : Check pg_hba backup file exists
+  stat:
+    path: "{{ postgres_pg_hba_file }}.backup"
+  register: pg_hba_backup_file
+
+- name : Create pg_hba backup file if not exists
+  copy:
+    src: "{{ postgres_pg_hba_file }}"
+    dest: "{{ postgres_pg_hba_file }}.backup"
+    owner: postgres
+    group: postgres
+    mode: 0640
+    remote_src: yes
+  when: not pg_hba_backup_file.stat.exists
+
+- name: Change the config of postgres pg_hba - trust method for user postgres on local
+  lineinfile:
+    path: "{{ postgres_pg_hba_file }}"
+    regexp: "^local   all             postgres                                peer"
+    line: "local   all             postgres                                trust"
+    owner: postgres
+    group: postgres
+    mode: 0640
+  notify:
+    - Restart postgres

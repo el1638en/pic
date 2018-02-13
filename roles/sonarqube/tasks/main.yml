@@ -1,71 +1,11 @@
 ---
 # tasks file for sonarqube
 
-- name: Install archive tools
-  apt:
-    name: "{{item}}"
-    state: present
-  with_items:
-    - "tar"
-    - "unzip"
+- name : Check sonarqube home directory exists
+  stat:
+    path: "{{ sonarqube_home }}"
+  register: sonarqube_home_result
 
-- name: Create SonarQube install directory
-  file:
-    path: "{{ sonarqube_install_directory }}"
-    state: directory
-    owner: root
-    group: root
-    recurse: yes
-
-- name: Download, decompress and delete SonarQube archive
-  unarchive:
-    src: "{{ sonarqube_download_url }}"
-    dest: "{{ sonarqube_install_directory }}/"
-    owner: root
-    group: root
-    remote_src: True
-
-- name: Init database for SonarQube
-  include: database.yml
-  when: sonarqube_postgres_database_enabled
-
-- name: Change the config of sonar web port
-  lineinfile:
-    path: "{{ sonarqube_home }}/conf/sonar.properties"
-    regexp: "^#sonar.web.port="
-    line: "sonar.web.port={{ sonarqube_web_port }}"
-    state: present
-    owner: root
-    group: root
-
-- name: Copy systemd SonarQube script file
-  template:
-    src: sonar.service.j2
-    dest: "/etc/systemd/system/sonar.service"
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Enable SonarQube service
-  systemd:
-    name: sonar
-    enabled: yes
-
-- name: Add Iptables rules for SonarQube
-  include: iptables.yml
-  when: sonarqube_iptables_enabled
-
-- name: Restart SonarQube
-  command: echo "Restart SonarQube service"
-  notify:
-    - Restart SonarQube
-
-- name: Add reverse proxy configuration
-  include: reverse_proxy.yml
-  when: sonarqube_reverse_proxy_enabled
-
-- name: Restart apache2
-  command: echo "Restart apache2"
-  notify:
-    - Restart apache2
-  when: sonarqube_reverse_proxy_enabled
+- name : include install file
+  include: install.yml
+  when: not sonarqube_home_result.stat.exists

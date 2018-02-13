@@ -3,7 +3,7 @@
 - name: Install archive tools
   apt:
     name: "{{ item }}"
-    state: latest
+    state: present
   with_items:
     - "tar"
     - "unzip"
@@ -42,7 +42,6 @@
       PATH=$PATH:"$M2_HOME/bin"
       export PATH
     state: present
-
-- name: Relaod environments variables
-  shell: . /etc/profile
+  notify:
+    - Reload profile variable
 

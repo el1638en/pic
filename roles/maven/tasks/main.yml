@@ -2,7 +2,8 @@
 # tasks file for maven
 
 - name: Get Maven version installed on the machin
-  shell: "{{ maven_home }}/bin/mvn --version 2>&1"
+  command: >
+    {{ maven_home }}/bin/mvn --version 2>&1
   register: maven_version_result
   ignore_errors: True
 
