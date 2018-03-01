@@ -25,6 +25,3 @@
   notify:
     - Relaod environments variables
   when: "ansible_userspace_bits == '64'"
-
-# - name: Relaod environments variables
-#   shell: . /etc/environment
