@@ -42,9 +42,11 @@
 # Update Jenkins and install configured plugins.
 - include_tasks: plugins.yml
 
-
 # Config SSH
 - include_tasks: ssh-config.yml
 
 # Gestion de la configuration de Maven
 - include_tasks: maven-config.yml
+
+# Gestion des credentials de j'utilisateur Jenkins
+- include_tasks: credentials.yml
