@@ -1,0 +1,40 @@
+import jenkins.model.*
+import hudson.model.*
+import hudson.slaves.*
+import hudson.plugins.sshslaves.SSHLauncher
+import java.util.ArrayList;
+
+Jenkins jenkins = Jenkins.instance;
+String credentialID = "jenkins";
+
+{% for node in groups['jenkins_slave'] %}
+
+{{node}}: {
+    def need_update=0;
+    for (Node existNode in jenkins.nodes) {
+      if ("$existNode.nodeName" == "{{node}}") {
+         need_update=1;
+         continue;
+      }
+    }
+    ComputerLauncher launcher = new SSHLauncher("{{hostvars[node]['ansible_host']}}", 22 , credentialID, "","","","",0,0,0);
+
+    Slave slave = new DumbSlave(
+                    "{{ node }}",
+                    "Jenkins node {{ node }}",
+                    "/home/jenkins",
+                    "2",
+                    Node.Mode.NORMAL,
+                    "Jenkins slave",
+                    launcher,
+                    new RetentionStrategy.Always(),
+                    new LinkedList());
+    if (need_update==1) {
+      jenkins.updateNode(slave);
+    } else {
+      jenkins.addNode(slave);
+    }
+}
+{% endfor %}
+
+jenkins.save();
