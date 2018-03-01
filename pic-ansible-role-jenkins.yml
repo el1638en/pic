@@ -8,7 +8,7 @@
 - hosts: jenkins_master
   become: yes
   roles:
-    - { role: jenkins2 }
+    - { role: jenkins }
 
 
 # ##################

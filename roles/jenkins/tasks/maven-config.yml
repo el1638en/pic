@@ -1,0 +1,10 @@
+---
+# Taches de configuration de Maven sur le serveur Jenkins
+
+- name: Copie des configs Maven
+  template:
+    src: hudson.tasks.Maven.xml.j2
+    dest: "{{ jenkins_home }}/hudson.tasks.Maven.xml"
+    owner: "{{ jenkins_process_user }}"
+    group: "{{ jenkins_process_group }}"
+    mode: 0640
