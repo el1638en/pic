@@ -1,6 +1,14 @@
 ---
+
 - name: restart jenkins
-  service: name=jenkins state=restarted
+  systemd:
+    name: jenkins
+    state: restarted
+
+- name: restart apache2
+  systemd:
+    name: apache2
+    state: restarted
 
 - name: configure default users
   template:

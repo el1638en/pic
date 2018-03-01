@@ -1,0 +1,18 @@
+---
+# tasks file for reverse proxy jenkins
+
+- name: Copy virtualhost file
+  template:
+    src: vhosts_jenkins_apache2.j2
+    dest: "/etc/apache2/sites-available/jenkins.conf"
+    owner: root
+    group: root
+
+- name: Enable Virtualhost for jenkins.
+  file:
+    src: "/etc/apache2/sites-available/jenkins.conf"
+    dest: "/etc/apache2/sites-enabled/jenkins.conf"
+    state: link
+    owner: root
+    group: root
+    mode: 0777

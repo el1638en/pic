@@ -53,3 +53,15 @@
 
 # Ajout des noeuds-slaves
 - include_tasks: nodes.yml
+
+# Installation d'ansible
+- include_tasks: ansible.yml
+
+- include_tasks: iptables.yml
+  when: jenkins_iptables_enabled
+
+- name: Add reverse proxy configuration
+  include_tasks: reverse-proxy.yml
+  notify:
+    - restart apache2
+  when: jenkins_reverse_proxy_enabled
