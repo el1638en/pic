@@ -3,7 +3,7 @@
 
 - name: Delete default index.html.
   file:
-    path: "/var/www/html/index.html"
+    path: "/var/www/html"
     state: absent
 
 - name: Change the config of apache2
