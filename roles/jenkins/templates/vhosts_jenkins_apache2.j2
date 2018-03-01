@@ -10,4 +10,6 @@
     RewriteRule ^/$ http://{{ jenkins_host_ip }}:{{ jenkins_http_port }}/ [P]
     RewriteRule ^/(.*)$ http://{{ jenkins_host_ip }}:{{ jenkins_http_port }}/$1 [P]
     ProxyPassReverse / http://{{ jenkins_host_ip }}:{{ jenkins_http_port }}/
+    ProxyPass / http://{{ jenkins_host_ip }}:{{ jenkins_http_port }}/ nocanon
+    ProxyRequests Off
 </VirtualHost>
