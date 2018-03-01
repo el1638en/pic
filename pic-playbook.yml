@@ -11,14 +11,21 @@
     - { role: ssh, ssh_delete_obsolete_packages: True }
     - { role: git }
 
-
 ###################
 # Installation du jenkins master
 ###################
 - hosts: jenkins_master
   become: yes
   roles:
-    - { role: jenkins_master, jenkins_network_interface: "enp0s8", jenkins_iptables_enabled: True, tags: ['jenkins_master'] }
+    - role: apache2
+    - role: jenkins
+      jenkins_iptables_enabled: True
+      jenkins_network_interface: "enp0s8"
+      jenkins_reverse_proxy_enabled: True
+      jenkins_host_ip: 192.168.56.2
+      jenkins_reverse_proxy_http_default_port: 80
+      jenkins_reverse_proxy_server_name: "jenkins.davidson.fr"
+
 
 ##################
 # Gestion de la clé publique de l'utilisateur jenkins
@@ -29,11 +36,13 @@
   - name: Retrieve jenkins user public key
     local_action: shell cat {{ jenkins_public_key_dir }}/id_rsa.pub
     register: public_key
+    no_log: True
 
   - name: set jenkins_public_key
     set_fact:
       jenkins_public_key: '{{ public_key.stdout }}'
-
+    no_log: True
+    
   - name: Delete jenkins slave user private key
     local_action: file path="{{ jenkins_public_key_dir }}/id_rsa.pub" state=absent
 
@@ -48,40 +57,4 @@
     - { role: maven }
     - { role: gradle }
 
-
-
-##################
-# Installation nexus
-##################
-- hosts: nexus_server:sonarqube_server
-  become: yes
-  roles:
-    - role: postgres
-      tags: ['nexus','sonarqube']
-
-- hosts: nexus_server
-  become: yes
-  roles:
-    - role: nexus
-      nexus_network_interface: "enp0s8"
-      nexus_iptables_enabled: True
-      tags: ['nexus']
-
-
-# ##################
-# # Installation sonarqube
-# ##################
-- hosts: sonarqube_server
-  become: yes
-  roles:
-    - role: sonarqube
-      sonarqube_postgres_database_enabled: True
-      tags: ['sonarqube']
-
-
-##################
-# Android - TODO
-##################
-# https://pamartinezandres.com/how-to-set-up-a-continuous-integration-server-for-android-development-ubuntu-jenkins-sonarqube-43c1ed6b08d3?gi=6503321539ae
-# https://pamartinezandres.com/running-android-tests-on-cloud-devices-using-a-jenkins-ci-server-firebase-test-lab-amazon-device-b67cb4b16c40
 
